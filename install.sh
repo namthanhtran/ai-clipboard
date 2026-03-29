@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO="d00476/clipboard-manager"
+REPO="namthanhtran/ai-clipboard"
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
