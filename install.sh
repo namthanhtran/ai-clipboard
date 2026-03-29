@@ -3,7 +3,7 @@ set -e
 
 REPO="namthanhtran/ai-clipboard"
 TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+trap "rm -rf \"$TMPDIR\"" EXIT
 
 echo "Installing Clipboard Manager..."
 
@@ -27,22 +27,16 @@ npm install
 echo "Building app..."
 npm run dist:mac
 
-# Install
-DMG=$(find dist -name "*.dmg" | head -1)
+# Find the .app directly from the mac output directory
+APP=$(find dist/mac* -maxdepth 1 -name "*.app" -print -quit 2>/dev/null)
 
-if [ -z "$DMG" ]; then
-  echo "Build failed: no .dmg found in dist/"
+if [ -z "$APP" ]; then
+  echo "Build failed: no .app found in dist/"
   exit 1
 fi
 
-echo "Mounting $DMG..."
-MOUNT=$(hdiutil attach "$DMG" -nobrowse -noautoopen | tail -1 | awk '{print $NF}')
-
-APP=$(find "$MOUNT" -name "*.app" | head -1)
 echo "Installing to /Applications..."
 cp -r "$APP" /Applications/
-
-hdiutil detach "$MOUNT" -quiet
 
 echo ""
 echo "Done! Clipboard Manager installed."
