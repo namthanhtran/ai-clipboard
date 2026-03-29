@@ -133,24 +133,22 @@ ipcMain.on('item-selected', async (_event, text: string) => {
   clipboard.writeText(text)
   lastClipboard = text  // prevent polling from re-adding this item
   win?.hide()
-  // On macOS: hide the app so macOS naturally returns focus to the previous app+input
   if (process.platform === 'darwin') {
     app.hide()
-  }
-  // Wait for focus to return to the previous app
-  await new Promise<void>((resolve) => setTimeout(resolve, 50))
-  try {
-    const { keyboard, Key } = await import('@nut-tree-fork/nut-js')
-    if (process.platform === 'darwin') {
-      await keyboard.pressKey(Key.LeftSuper, Key.V)
-      await keyboard.releaseKey(Key.LeftSuper, Key.V)
-    } else {
+    await new Promise<void>((resolve) => setTimeout(resolve, 200))
+    const { execFile } = await import('child_process')
+    execFile('osascript', ['-e', 'tell application "System Events" to key code 9 using command down'], (err) => {
+      if (err) console.error('Auto-paste failed:', err.message)
+    })
+  } else {
+    await new Promise<void>((resolve) => setTimeout(resolve, 50))
+    try {
+      const { keyboard, Key } = await import('@nut-tree-fork/nut-js')
       await keyboard.pressKey(Key.LeftControl, Key.V)
       await keyboard.releaseKey(Key.LeftControl, Key.V)
+    } catch (err) {
+      console.error('Auto-paste failed:', (err as Error).message)
     }
-  } catch (err) {
-    // Auto-paste failed — text is already in clipboard, user can paste manually
-    console.error('Auto-paste failed:', (err as Error).message)
   }
 })
 
